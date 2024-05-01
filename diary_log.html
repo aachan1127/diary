@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <h1>過去の日記</h1>
+</head>
+
+
+<body>
+
+    <main>
+        <text id="text"></text>
+        <text id="kibun"></text>
+
+
+        <!-- リセットボタン -->
+        <button>
+            <ul id="clear">クリア</ul>
+        </button>
+    </main>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+
+        // ローカルストレージ内のデータを表示させる(日記内容)
+        if (localStorage.getItem("diary")) {
+            const text = localStorage.getItem("diary");
+            $("#text").text(text);
+        };
+
+        // 講義資料5.4[データを取得する時の処理]
+        // 保存されているデータをリロードしても消えなくする
+        if (localStorage.getItem('kibun')) {
+            const json = localStorage.getItem('kibun');
+            // JSON形式をオブジェクトに戻す
+            const kibun2 = JSON.parse(json);
+            console.log(kibun2);
+            $("#kibun").text(kibun2.kibun);
+        };
+
+        // クリアボタンここから-----------------------------
+        $('#clear').on('click', function () {
+            localStorage.removeItem("diary");
+            alert("削除しました");
+            $("#text_area").val("");
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>myMemoPad中級</title>
+  <link rel="stylesheet" href="css/sample.css">
+</head>
+
+<body>
+  <header>
+    <h1>MemoPad中級編</h1>
+  </header>
+
+  <main>
+    <input type="text" id="input">
+    <textarea id="text_area"></textarea>
+    <ul>
+      <li id="save">Save</li>
+      <li id="clear">Clear</li>
+    </ul>
+  </main>
+
+  <footer>
+    <small>G's</small>
+  </footer>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script>
+
+    // 保存の処理
+    $('#save').on('click', function () {
+      // テキストエリアの内容を取得
+      // const text = $('#text_area').val();
+      // localStorage.setItem('memo', text);
+
+      // テキストエリアの内容を取得
+      const memo = {
+        title: $('#input').val(),
+        text: $('#text_area').val(),
+      };
+      console.log(memo);
+      // オブジェクトは保存できないのでJSON形式に変換する
+      const json = JSON.stringify(memo);
+      console.log(json);
+      localStorage.setItem('memo2', json); //memo2はキー名、jsonは→JSON.stringify(memo)
+    });
+
+
+    // 削除の処理
+    $('#clear').on('click', function () {
+      localStorage.removeItem('memo2');
+      $('#text_area').val('');
+      $('#input').val('');
+    });
+
+    // 保存されているデータを表示する処理
+    if (localStorage.getItem('memo2')) {   //もしローカルストレージにメモがあったらそのメモを取得
+      const text = localStorage.getItem('memo2'); //textにmemoを取得
+      // JSON形式は扱いにくいのでオブジェクトに戻す
+      const memo = JSON.parse(json);
+      $('#text_area').val(mamo.text); //text_areaにtextを表示
+      $('#input').val(mamo.title);
+    };
+
+  </script>
+
+</body>
+
+</html>

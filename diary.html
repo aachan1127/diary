@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>脱！３日坊主日記</title>
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans+JP" rel="stylesheet" />
+    <link rel="stylesheet" href="css/diary.css">
+</head>
+
+<body>
+    <!-- 音を追加 -->
+    <audio src="sound/levelup.mp3" id="play-button"></audio>
+    <audio src="sound/kansei.mp3" id="kansei"></audio>
+    <audio src="sound/eraierai_01.mp3" id="eraierai"></audio>
+    <audio src="sound/ashitamoganbatte_01.mp3" id="ashitamoganbatte"></audio>
+    <audio src="sound/ganbattemasune_01.mp3" id="ganbattemasune"></audio>
+    <audio src="sound/mataashitane_01.mp3" id="mataashitane"></audio>
+    <audio src="sound/sugoinee_01.mp3" id="sugoinee"></audio>
+    <audio src="sound/sugoisugoi_01.mp3" id="sugoisugoi"></audio>
+    <audio src="sound/yatterebasonouchinareruyo_01.mp3" id="yatterebasonouchinareruyo"></audio>
+    <audio src="sound/youshiiikanji_01.mp3" id="youshiiikanji"></audio>
+
+
+
+    <section>
+        <h1>脱！３日坊主日記</h1>
+    </section>
+
+    <section>
+        <div class="start_display">
+            <p>まずは20日続けてみよう！！！</p>
+            <button id="start">日記を書く！</button><!--スタートボタン-->
+
+        </div>
+    </section>
+
+    <main class="janken">
+
+
+        <!-- やるじゃんの画像 -->
+        <div id="good">
+            <img id="good_img" src="">
+        </div>
+
+        <div class="Score_caunt">
+            <p id="Score">日記を書いた日:0日目</p><!-- cauntの値を表示する要素 -->
+
+            <!-- つーちゃんの画像 -->
+            <div id="tuuchan_box">
+                <img class="tuuchan">
+            </div>
+
+
+            <p id="timer"></p><!--残り時間の計測を表示する要素-->
+        </div>
+
+        <h2>20日書いたら"Apple pencil"買ってよし！</h2>
+
+        <!-- 今日の気分選択ボタン -->
+        <p>今日の気分は？</p>
+
+        <div class="number_text">
+            <p>Bad</p>
+            <p>Happy</p>
+        </div>
+        <div class="number_button">
+            <button id="button1">1</button>
+            <button id="button2">2</button>
+            <button id="button3">3</button>
+            <button id="button4">4</button>
+            <button id="button5">5</button>
+            <button id="button6">6</button>
+            <button id="button7">7</button>
+            <button id="button8">8</button>
+            <button id="button9">9</button>
+            <button id="button10">10</button>
+        </div>
+
+
+        <textarea id="text_area"></textarea>
+
+
+
+
+        <!-- 保存ボタン -->
+        <ul>
+            <button>
+                <ul id="save">登録</ul>
+            </button>
+        </ul>
+
+        <!-- 過去の日記を見る -->
+        <form action="" method="post">
+            <a href="http://127.0.0.1:5500/diary_log.html" target="_blank">過去の日記</a>
+        </form>
+
+
+        <footer>あみたろの声素材工房（https://amitaro.net/）</footer>
+    </main>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+
+        // スタートボタン押した時におこるアクション
+        $("#start").on('click', function () {
+            $('.start_display').hide();//div class="start_display"を非表示にする(スタート画面)
+            $('.janken').show();//main class="janken"を表示(じゃんけん画面)
+            $("#yatterebasonouchinareruyo").get(0).play();//やってればそのうちなれるよの声が出る
+
+
+            // カウントダウン処理----------------
+            const totalTime = 86400000;//24時間      <-------ここ後で確認する！！！
+            const oldTime = Date.now();
+
+            const timer = setInterval(() => {
+                const currentTime = Date.now();
+                const diff = currentTime - oldTime;//差分を求める
+                const remainMSec = totalTime - diff;//残りのミリ数を計算
+                const remainSec = Math.ceil(remainMSec / 1000);//ミリ秒を整数の秒数に変換する
+
+                let label = `残り${remainSec}秒`;
+
+                if (remainMSec <= 0) { //0秒以下になったら
+                    clearInterval(timer); //タイマーを終了する
+                    label = `書けなかった日があっても大丈夫`; //タイマーが終了した時に文字を表示
+                }
+
+                //画面に表示する
+                $('#timer').text(label);
+            }, 1000);
+
+
+            //  講義資料5.4[データを取得する時の処理]
+            // 保存されているデータをリロードしても消えなくする
+            if (localStorage.getItem('memo2')) {
+                const json = localStorage.getItem('memo2');
+                // JSON形式をオブジェクトに戻す
+                const number = JSON.parse(json);
+                console.log(number);
+                $("#Score").text("日記を書いた日" + number.diary + "日目");
+            };
+
+
+            // ローカルストレージ内のデータを表示させる(日記内容)
+            if (localStorage.getItem("diary")) {
+                const text = localStorage.getItem("diary");
+                $("#text_area").text(text);
+            };
+
+            // カウントをlocalStorageから取得して表示する
+            if (localStorage.getItem('caunt')) {
+                caunt = parseInt(localStorage.getItem('caunt'));
+                updateScore(caunt);
+            }
+
+        });
+        //-----------------------------ここまでカウントダウン処理
+
+
+        //ナンバーボタン押した時に起こる処理--------------------------
+
+        let number = 0;
+
+        $('#button1').on('click', function () {
+            // number = 1;
+            let number = { 'kibun': 1 };
+            console.log(number);
+            // 気分の値(number)をjson形式に変換
+            let json = JSON.stringify(number);
+            console.log(json);
+            localStorage.setItem("kibun", json);
+        });
+
+        $('#button2').on('click', function () {
+            // number = 2;
+            let number = { 'kibun': 2 };
+            console.log(number);
+            // 気分の値(number)をjson形式に変換
+            let json = JSON.stringify(number);
+            console.log(json);
+            localStorage.setItem("kibun", json);
+        });
+
+
+        $('#button3').on('click', function () {
+            // number = 3;
+            let number = { 'kibun': 3 };
+            console.log(number);
+            // 気分の値(number)をjson形式に変換
+            let json = JSON.stringify(number);
+            console.log(json);
+            localStorage.setItem("kibun", json);
+        });
+
+
+        $('#button4').on('click', function () {
+            // number = 4;
+            let number = { 'kibun': 4 };
+            console.log(number);
+            // 気分の値(number)をjson形式に変換
+            let json = JSON.stringify(number);
+            console.log(json);
+            localStorage.setItem("kibun", json);
+        });
+
+
+        $('#button5').on('click', function () {
+            // number = 5;
+            let number = { 'kibun': 5 };
+            console.log(number);
+            // 気分の値(number)をjson形式に変換
+            let json = JSON.stringify(number);
+            console.log(json);
+            localStorage.setItem("kibun", json);
+        });
+
+
+        $('#button6').on('click', function () {
+            // number = 6;
+            let number = { 'kibun': 6 };
+            console.log(number);
+            // 気分の値(number)をjson形式に変換
+            let json = JSON.stringify(number);
+            console.log(json);
+            localStorage.setItem("kibun", json);
+        });
+
+
+        $('#button7').on('click', function () {
+            // number = 7;
+            let number = { 'kibun': 7 };
+            console.log(number);
+            // 気分の値(number)をjson形式に変換
+            let json = JSON.stringify(number);
+            console.log(json);
+            localStorage.setItem("kibun", json);
+        });
+
+
+        $('#button8').on('click', function () {
+            // number = 8;
+            let number = { 'kibun': 8 };
+            console.log(number);
+            // 気分の値(number)をjson形式に変換
+            let json = JSON.stringify(number);
+            console.log(json);
+            localStorage.setItem("kibun", json);
+        });
+
+
+        $('#button9').on('click', function () {
+            // number = 9;
+            let number = { 'kibun': 9 };
+            console.log(number);
+            // 気分の値(number)をjson形式に変換
+            let json = JSON.stringify(number);
+            console.log(json);
+            localStorage.setItem("kibun", json);
+        });
+
+
+        $('#button10').on('click', function () {
+            // number = 10;
+            let number = { 'kibun': 10 };
+            console.log(number);
+            // 気分の値(number)をjson形式に変換
+            let json = JSON.stringify(number);
+            console.log(json);
+            localStorage.setItem("kibun", json);
+        });
+
+
+
+        // ナンバーボタン押した時に起こる処理ここまで-------------------
+
+
+
+
+
+
+        // ここから保存の機能ーーーーーーーーーーーー
+        let date = new Date();
+        date.getFullYear(); //(年)
+        date.getMonth(); //(月)
+        date.getDate(); //(日)
+        date.getDay(); //(曜)
+        date.getHours(); //(時)
+        date.getMinutes(); //(分)
+
+
+        // 日記を書いた日のカウントを入れる変数
+        let caunt = 0;
+        console.log(caunt);
+
+
+        $('#save').on('click', function () {
+            // alert("登録完了！えらいぞ！");!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+            // テキストエリアの内容を保存
+            const text = $("#text_area").val();
+            localStorage.setItem("diary", text);
+
+
+            // 保存押した時に日記書いた日に+1される
+            caunt++;
+            console.log(caunt);
+            // カウントを更新してlocalStorageに保存する
+            localStorage.setItem('caunt', caunt);
+            updateScore(caunt);
+
+
+            updateScore(caunt);
+
+            //日記を書いた回数、日付を取得
+            const memo = {
+                diary: caunt,
+                day: date,
+            };
+            console.log(memo);
+
+            // JSON形式に変換
+            const json = JSON.stringify(memo);
+            console.log(json);
+            localStorage.setItem('memo2', json);
+
+            // 講義資料5.4[データを取得する時の処理]
+            // // 保存されているデータをリロードしても消えなくする
+            // if (localStorage.getItem('memo2')) {
+            //     const Score = localStorage.getItem('memo2');
+            //     // JSON形式をオブジェクトに戻す
+            //     const memo = JSON.parse(json);
+            //     console.log(memo);
+            // };
+
+            if (localStorage.getItem('memo2')) {
+                const Score = localStorage.getItem('memo2');
+                // JSON形式をオブジェクトに戻す
+                const memo = JSON.parse(Score);
+                console.log(memo);
+            };
+
+            // cauntの値を表示する要素を取得する
+            const Score = $("#Score").text();
+
+            if (caunt === 5) {
+                // つーちゃんレベルアップの音を出す
+                $("#play-button").get(0).play();
+            }
+
+            if (caunt >= 0) {
+                $(".tuuchan").attr('src', 'images/tuuchan_01.png'); // つーちゃんの画像
+                $(".tuuchan").fadeIn(1000); //つーちゃんふわっと表示
+            }
+
+            if (caunt >= 5) {
+                $(".tuuchan").attr('src', 'images/tuuchan_02.png'); // つーちゃんの画像
+                $(".tuuchan").fadeIn(1000); //つーちゃんふわっと表示
+
+            }
+            if (caunt >= 10) {
+                $(".tuuchan").attr('src', 'images/tuuchan_03.png'); // つーちゃんの画像
+                $(".tuuchan").fadeIn(1000); //つーちゃんふわっと表示
+            }
+            if (caunt === 10) {
+                // つーちゃんレベルアップの音を出す
+                $("#play-button").get(0).play();
+            }
+
+            if (caunt >= 15) {
+                $(".tuuchan").attr('src', 'images/tuuchan_04.png'); // つーちゃんの画像
+                $(".tuuchan").fadeIn(1000); //つーちゃんふわっと表示
+            }
+            if (caunt === 15) {
+                // つーちゃんレベルアップの音を出す
+                $("#play-button").get(0).play();
+            }
+
+            if (caunt >= 20) {
+                $(".tuuchan").attr('src', 'images/tuuchan_05.png'); // つーちゃんの画像
+                $(".tuuchan").fadeIn(1000); //つーちゃんふわっと表示
+            }
+            // if (caunt === 20) {
+            //     // alert("20日書けたね!");
+            //     $("#good_img").show();
+            //     $("#good_img").fadeOut(4000);//おめでとうの画像をふわっと表示
+            //     good_img.src = 'images/omedetou.png'; // おめでとうの画像
+            //     // 歓声の音を出す
+            //     $("#kansei").get(0).play();
+            // }
+
+
+            const min = 1;
+            const max = 7;
+
+            const randomnumber = Math.floor(Math.random() * (max - min + 1)) + min;
+
+            if (randomnumber === 1) {
+                $("#good_img").show();
+                $("#good_img").fadeOut(2000);//グッドの画像をふわっと表示
+                good_img.src = 'images/good_04.png'; // グッドの画像画像
+                $("#ashitamoganbatte").get(0).play();
+
+            }
+            if (randomnumber === 2) {
+                $("#good_img").show();
+                $("#good_img").fadeOut(2000);//グッドの画像をふわっと表示
+                good_img.src = 'images/good_02.png'; // グッドの画像画像
+                $("#ganbattemasune").get(0).play();
+            }
+            if (randomnumber === 3) {
+                $("#good_img").show();
+                $("#good_img").fadeOut(2000);//グッドの画像をふわっと表示
+                good_img.src = 'images/good_03.png'; // グッドの画像画像
+                $("#mataashitane").get(0).play();
+            }
+            if (randomnumber === 4) {
+                $("#good_img").show();
+                $("#good_img").fadeOut(2000);//グッドの画像をふわっと表示
+                good_img.src = 'images/good_01.png'; // グッドの画像画像
+                $("#sugoinee").get(0).play();
+            }
+            if (randomnumber === 5) {
+                $("#good_img").show();
+                $("#good_img").fadeOut(2000);//グッドの画像をふわっと表示
+                good_img.src = 'images/good_05.png'; // グッドの画像画像
+                $("#sugoisugoi").get(0).play();
+            }
+            if (randomnumber === 6) {
+                $("#good_img").show();
+                $("#good_img").fadeOut(2000);//グッドの画像をふわっと表示
+                good_img.src = 'images/good_06.png'; // グッドの画像画像
+                $("#eraierai").get(0).play();
+            }
+            if (randomnumber === 7) {
+                $("#good_img").show();
+                $("#good_img").fadeOut(2000);//グッドの画像をふわっと表示
+                good_img.src = 'images/good_07.png'; // グッドの画像画像
+                $("#youshiiikanji").get(0).play();
+            }
+
+            // 20日目でおめでとうの表示、ここじゃないと表示されなかった！ーーーーーーーーーーーーーー
+            if (caunt === 20) {
+                // alert("20日書けたね!");
+                $("#good_img").show();
+                $("#good_img").fadeOut(4000);//おめでとうの画像をふわっと表示
+                good_img.src = 'images/omedetou.png'; // おめでとうの画像
+                // 歓声の音を出す
+                $("#kansei").get(0).play();
+            }
+            // ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+
+
+        });
+
+
+        // cauntの値が更新されるたびに、その値を表示する
+        function updateScore(caunt) {
+            Score.textContent = `日記を書いた日：${caunt}日目`;
+        };
+
+
+
+
+
+    </script>
+
+
+
+</body>
+
+</html>
